@@ -45,7 +45,7 @@ X_processed = np.array(X_processed)  # Convertir en tableau numpy
 X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42)
 
 # Initialiser et entraîner CatBoost
-catboost_model = CatBoostRegressor(iterations=500, learning_rate=0.05, depth=6, verbose=100)
+catboost_model = CatBoostRegressor(iterations=800, learning_rate=0.05, depth=10, verbose=100)
 print("\nTraining CatBoost...")
 catboost_model.fit(X_train, y_train)
 
@@ -67,6 +67,6 @@ y_new_pred = catboost_model.predict(X_new_processed)
 
 # Sauvegarder les résultats
 submission = pd.DataFrame({"Id": test_df["Id"], "SalePrice": y_new_pred})
-submission.to_csv("submission.csv", index=False)
+submission.to_csv("submission10kbase.csv", index=False)
 
 print("\nPrédictions CatBoost enregistrées dans submission.csv !")
