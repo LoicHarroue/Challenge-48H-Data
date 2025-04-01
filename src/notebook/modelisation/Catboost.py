@@ -11,7 +11,7 @@ from catboost import CatBoostRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 # Charger les données d'entraînement
-df = pd.read_csv("../../data/raw/trainNemo.csv")
+df = pd.read_csv("../../data/processed/trainNemo.csv")
 
 # Séparer les features et la cible
 X = df.drop(columns=["SalePrice", "Id"])
