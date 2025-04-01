@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import plotly.express as px
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
@@ -11,7 +13,7 @@ from catboost import CatBoostRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 # Charger les données d'entraînement
-df = pd.read_csv("../../data/processed/trainNemo.csv")
+df = pd.read_csv("../../data/raw/train.csv")
 
 # Séparer les features et la cible
 X = df.drop(columns=["SalePrice", "Id"])
@@ -45,7 +47,7 @@ X_processed = np.array(X_processed)  # Convertir en tableau numpy
 X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42)
 
 # Initialiser et entraîner CatBoost
-catboost_model = CatBoostRegressor(iterations=10000, learning_rate=0.05, depth=10, verbose=100, use_best_model=True, bagging_temperature=2,eval_metric="RMSE")
+catboost_model = CatBoostRegressor(iterations=1000, learning_rate=0.05, depth=10, verbose=100, use_best_model=True, bagging_temperature=2,eval_metric="RMSE")
 print("\nTraining CatBoost...")
 catboost_model.fit(X_train, y_train, eval_set=(X_test, y_test))
 
@@ -70,3 +72,34 @@ submission = pd.DataFrame({"Id": test_df["Id"], "SalePrice": y_new_pred})
 submission.to_csv("submission10kbase.csv", index=False)
 
 print("\nPrédictions CatBoost enregistrées dans submission.csv !")
+
+feature_names = preprocessor.get_feature_names_out()
+feature_importance = catboost_model.get_feature_importance()
+
+# Vérifier les longueurs
+print(f"Taille de feature_importance: {len(feature_importance)}")
+print(f"Taille de feature_names: {len(feature_names)}")
+
+# Créer le DataFrame correctement
+feature_importance_df = pd.DataFrame({
+    "Feature": feature_names,
+    "Importance": feature_importance
+}).sort_values(by="Importance", ascending=False)
+
+print(feature_importance_df)
+
+top_22_features = feature_importance_df[:22]
+
+# Créer le graphique interactif avec Plotly
+fig = px.bar(
+    top_22_features,
+    x="Importance",
+    y="Feature",
+    orientation="h",
+    title="Top 22 des variables les plus importantes dans CatBoost",
+    color="Importance",
+    color_continuous_scale="blues"
+)
+
+fig.update_layout(yaxis=dict(autorange="reversed"))  # Inverser l'axe Y
+fig.show()
